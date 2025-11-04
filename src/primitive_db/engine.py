@@ -22,7 +22,8 @@ class RuntimeDB:
         self.resulting(self.parser.parse(user_input))
 
     def resulting(self,result: dict):
-        match result["type"]:
+        log.info(result)
+        match result.get("type"):
             case TokensDDL.CREATE:
                 returns = self.db.create_table(table_name=result["table_name"], fields=result["fields"])  
                 if isinstance(returns, AlarmResponse):
@@ -30,21 +31,21 @@ class RuntimeDB:
                 else:
                     log.info(returns.value)  
 
-            case TokenServiceWords.HELP.value:
-                log.info(TokenServiceWords.HELP)
+            case TokenServiceWords.HELP:
+                self.db.show_commands()
             
-            case TokenServiceWords.LIST.value:
+            case TokenServiceWords.LIST:
                 for table in self.db.list_tables():
                     print(table)
             
-            case AlarmResponse.NO_FIELDS_SELECT:
-                print(AlarmResponse.NO_FIELDS_SELECT.value)
+            case AlarmResponse.PARSE_ERROR:
+                log.alarm(AlarmResponse.PARSE_ERROR.value)
             
             case TokensDML.SELECT:
-                ...
+                print(result)
             
             case TokensDML.INSERT:
-                ...
+                print(result)
             
             case _:
                 ...

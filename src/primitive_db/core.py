@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from consts import AlarmResponse, SuccessfullResponse
+from consts import AlarmResponse, SuccessfullResponse, DB_COMMANDS
 
 @dataclass
 class Table:
@@ -37,5 +37,9 @@ class DB:
     
     def load_table(self, path):
         ...
+    
     def list_tables(self):
         return self.tables
+    
+    def show_commands(self):
+        print("\n" + "\n".join(DB_COMMANDS) + "\n")
