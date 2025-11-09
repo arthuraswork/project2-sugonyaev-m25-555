@@ -7,10 +7,12 @@ class TokensDML(Enum):
     UPDATE = "update"
     LIST   = "list"
 
+
 class TokensDDL(Enum):
     CREATE = "create"
     TABLE  = "table"
     LOAD   = "load"
+    DROP   = "drop"
 
 class TokenSymbols(Enum):
     BEGIN_BRACES  = "{"
@@ -29,16 +31,18 @@ class TokenDatatype(Enum):
 class TokenServiceWords(Enum):
     HELP = "help"
     EXIT = "exit"
-    LIST = "listing"
+    LIST = "info"
 
 
 class AlarmResponse(Enum):
     TABLE_EXISTS = "таблица не создана, так как одноименная таблица уже есть"
     PARSE_ERROR  = "ошибка парсинга"  
     CORE_ERROR   = "ошибка в обработке запроса"
-
+    UNLNOWN_ERROR = "неизвестная ошибка"
+    
 class SuccessfullResponse(Enum):
     TABLE_CREATED = "таблица создана успешно"
+    SUCCESSFULL   = "операция выполнена успешка"
 
 DB_COMMANDS = [
     "insert into <имя_таблицы> values {<значение1>, <значение2>, ...} - создать запись",

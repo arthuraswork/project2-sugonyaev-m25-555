@@ -24,29 +24,33 @@ class RuntimeDB:
 
     def resulting(self,result: dict):
         log.info(result)
-        match result.get("type"):
-            case TokensDDL.CREATE:
-                returns = self.db.create_table(table_name=result["table_name"], fields=result["fields"])  
-                if isinstance(returns, AlarmResponse):
-                    log.alarm(returns.value)
-                else:
-                    log.info(returns.value)  
+        response_type = result.get("type")
+        print(response_type)
+        if response_type:
+            match response_type:
+                case TokensDDL.CREATE:
+                    returns = self.db.create_table(table_name=result["table_name"], fields=result["fields"])  
+                    if isinstance(returns, AlarmResponse):
+                        log.alarm(returns.value)
+                    else:
+                        log.info(returns.value)  
 
-            case TokenServiceWords.HELP:
-                self.db.show_commands()
-            
-            case TokenServiceWords.LIST:
-                for table in self.db.list_tables():
-                    print(table)
-            
-            case AlarmResponse.PARSE_ERROR:
-                log.alarm(AlarmResponse.PARSE_ERROR.value)
-            
-            case TokensDML.SELECT:
-                print(result)
-            
-            case TokensDML.INSERT:
-                self.db.insert(table_name=result["table_name"], fields=result["fields"])
-            
-            case _:
-                ...
+                case TokenServiceWords.HELP:
+                    self.db.show_commands()
+                
+                case TokenServiceWords.LIST:
+                    self.db.list_tables()
+                
+                case AlarmResponse.PARSE_ERROR:
+                    log.alarm(AlarmResponse.PARSE_ERROR.value)
+                
+                case TokensDML.SELECT:
+                    self.db.select(table_name=result["table_name"], what=result["what"])
+                
+                case TokensDML.INSERT:
+                    self.db.insert(table_name=result["table_name"], fields=result["fields"])
+                case TokensDDL.DROP:
+
+                    self.db.drop(table_name=result["table_name"])
+                case _:
+                    ...

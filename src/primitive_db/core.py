@@ -3,68 +3,77 @@ from consts import AlarmResponse, SuccessfullResponse, DB_COMMANDS
 
 @dataclass
 class Table:
+    """
+    Описывает одну таблицу
+    name отвечает за имя таблицы
+    fields отвечает за содержание таблицы
+    """
     name: str
-    fields: list[tuple[str,str]]
-    fields_value: list[tuple]
-
+    fields: dict[str, list]
+    
     def __repr__(self):
         return f"{self.name}: {self.fields}"
     
-    def append(self, values):
-
-        inserting_tuple = list()
-
-        for field in self.fields:
-            for value in values:
-
-                if field[0] == value[0] and field[1] == field[1]:
-
-                    inserting_tuple.append(value[2])
-            else:
-                yield "core error"
-
-        else:
-            self.fields_value.append(tuple(inserting_tuple))
-
+    def post(self, values: tuple):
+        """добавляет значения в таблицу"""
+        for field, datatype, value in values:
+            key = '-'.join((field,datatype))
+            if key in self.fields:
+                self.fields[key].append(value)
+        self.fields['id-#'].append(len(self.fields['id-#'])+1)
+    
     def all(self):
-        return.self.fields_value()
+        """возвращает все данные таблицы"""
+        return self.fields
 
 @dataclass
 class DB:
     def __init__(self):
-        self.tables = list()
-        self.tables_name = list()
+        self.tables = dict()
 
-    def create_table(self,table_name: str, fields: list):
-        if table_name not in self.tables_name:
-            new_table = Table(table_name, fields)
-            self.tables.append(new_table)
-            self.tables_name.append(table_name)
+    def create_table(self, table_name: str, fields: list):
+        if table_name not in self.tables:
+            fields_dict = {'-'.join(field): [] for field in fields}
+            if ('id','#') not in fields:
+                fields_dict['-'.join(('id','#'))] = list()
+            new_table = Table(table_name, fields_dict)
+            self.tables[table_name] = new_table
+            print(self.tables)
             return SuccessfullResponse.TABLE_CREATED
         else:
             return AlarmResponse.TABLE_EXISTS
-
-    def insert(self, table_name, fields:list):
-        for table in self.tables:
-            if table.name == table_name:
-                return table.append(fields)
-                
+        
+    def insert(self, table_name, fields: tuple):  
+        table = self.tables.get(table_name)
+        if table:  
+            table.post(fields)
+            return SuccessfullResponse.SUCCESSFULL
         return AlarmResponse.CORE_ERROR
 
     def select(self, what, table_name):
-        if 
+        if what == '*':
+            table = self.tables.get(table_name)
+            if table:
+                print(table.all())
+            else:
+                print(f"Таблица {table_name} не существует")
     
     def update(self, condition, table_name):
-        ...
+        pass
     
     def remove(self, condition, table_name):
+        pass
+    def commit(self):
         ...
-    
-    def load_table(self, path):
-        ...
+        
+    def drop(self,table_name:str):
+        table = self.tables.get(table_name)
+        if table:  
+            del self.tables[table_name]
+            return SuccessfullResponse.SUCCESSFULL
+        return AlarmResponse.CORE_ERROR
     
     def list_tables(self):
-        return self.tables
-    
+        print(self.tables)    
     def show_commands(self):
         print("\n" + "\n".join(DB_COMMANDS) + "\n")

@@ -1,23 +1,42 @@
 from consts import *
 from logger import log
-"""insert (name: "value", age: int)"""
-"""select table list"""
+
 
 class QueryParser:
+    """
+    Класс, отвечающий за парсинг страниц
+    на вход текстовой запрос
+    на выход словарь с запросом, типом запроса и дополнительными данными 
+    в зависимости от типа на исполнение
+    """
     def parse(self,query):
+        """
+        Входная команда, разделяет запросы на два типа -
+        сервисные - не работают с таблицами напрямую или не имеют аргументов
+        &
+        управляющие - работают с бд и таблицами и имеют аргументы
+        """
         if len(query.split()) == 1:
             if query in [word.value for word in TokenServiceWords]:
                 return self.__class__.service_word_parse(query)
         return self.preprocessor({"text":query})
     @staticmethod
     def service_word_parse(query):
+        """
+        мэтчинг сервисных комманд
+        """
         match query:
             case "help":
                 return {"type":TokenServiceWords.HELP}
             case "exit":
                 return {"type":TokenServiceWords.EXIT}
+            case "info":
+                return {"type":TokenServiceWords.LIST}
 
     def preprocessor(self, query: dict):
+        """
+        подготаваливает текст запроса для более удобного парсинга
+        """
         processed = query["text"].lower().strip()
         for char in list(TokenSymbols):
             processed = processed.replace(char.value, f' {char.value} ')
@@ -25,6 +44,9 @@ class QueryParser:
         
         return self.query_typing(query)
     def query_typing(self, query: dict):
+        """
+        типизирует команды
+        """
         if TokensDML.SELECT.value in query["text"]:
             log.info(TokensDDL.CREATE.value)
             return self.__class__.selecting_parser({
@@ -45,9 +67,37 @@ class QueryParser:
                 "text": query["text"],
                 "type": TokensDDL.CREATE
             })
+        if TokensDDL.DROP.value in query["text"]:
+            log.info(TokensDDL.DROP)
+            return self.__class__.droping_parser({
+                "text": query["text"],
+                "type": TokensDDL.DROP
+            })
+        return {"type":"_"}
 
     @staticmethod
+    def droping_parser(query:dict) -> dict:
+        """
+        обрабатывает дроп тэйбл запрос
+        """
+        tokenized = query["text"].split()
+        table_name = ""
+        
+        for i, token in enumerate(tokenized):
+            if token == "table" and len(token) > i:
+                table_name = tokenized[i+1]
+                break
+            
+        if table_name:
+            query["table_name"] = table_name
+            return query
+        query["type"] = AlarmResponse.PARSE_ERROR
+        return query
+    @staticmethod
     def selecting_parser(query: dict) -> dict:
+        """
+        обрабатывает запрос типа селект
+        """
         tokenized = query["text"].split()
         condition_list = []
         condition_flag = False
@@ -83,7 +133,9 @@ class QueryParser:
 
     @staticmethod
     def inserting_parser(query: dict) -> dict:
-  
+        """
+        обрабатывает инсерт запрос
+        """
         fields_flag = False
         fields_not_parsed = ""
         tokenized = query.get("text").split()
