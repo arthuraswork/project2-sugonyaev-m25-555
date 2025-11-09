@@ -34,7 +34,8 @@ class TokenServiceWords(Enum):
 
 class AlarmResponse(Enum):
     TABLE_EXISTS = "таблица не создана, так как одноименная таблица уже есть"
-    PARSE_ERROR  = "ошибка парсинга"   
+    PARSE_ERROR  = "ошибка парсинга"  
+    CORE_ERROR   = "ошибка в обработке запроса"
 
 class SuccessfullResponse(Enum):
     TABLE_CREATED = "таблица создана успешно"
@@ -49,3 +50,8 @@ DB_COMMANDS = [
     "exit - выход из программы",
     "help - справочная информация"
 ]
+
+RESERVED_WORDS = {
+    'select', 'insert', 'update', 'delete', 'create', 'table', 'into', 'from',
+    'where', 'values', 'set', 'and', 'or', 'true', 'false', 'if', 'help', 'exit'
+}

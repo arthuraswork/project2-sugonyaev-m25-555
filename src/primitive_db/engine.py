@@ -2,7 +2,8 @@ import prompt
 from parser import QueryParser
 from dataclasses import dataclass
 from consts import (
-    TokensDDL, AlarmResponse, TokenServiceWords, TokensDML)
+    TokensDDL, AlarmResponse, TokenServiceWords, TokensDML
+)
 from core import DB
 from logger import log
 
@@ -12,13 +13,13 @@ class RuntimeDB:
     db     = DB()
     def user_prompt(self):
         try:
-            user_input = prompt.string(prompt="primitive@db:~$ ")
+            user_input = prompt.string(prompt="primitive@db:~$")
             self.resulting(self.parser.parse(user_input))
         except Exception as e:
             print(e)
 
     def unsafe(self):
-        user_input = prompt.string(prompt="primitive@db:~$")
+        user_input = prompt.string(prompt="primitive@db:~!>")
         self.resulting(self.parser.parse(user_input))
 
     def resulting(self,result: dict):
@@ -45,7 +46,7 @@ class RuntimeDB:
                 print(result)
             
             case TokensDML.INSERT:
-                print(result)
+                self.db.insert(table_name=result["table_name"], fields=result["fields"])
             
             case _:
                 ...

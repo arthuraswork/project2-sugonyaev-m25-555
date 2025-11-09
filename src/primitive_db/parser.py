@@ -65,8 +65,7 @@ class QueryParser:
             if condition_flag and token != "(":
                 condition_list.append(token)
 
-
-            if token == "if" and tokenized[i +1] == "(":
+            if token in ["if","where"] and tokenized[i +1] == "(":
                 condition_flag = True
             if tokenized[i-1] == "from":
                 table_name = token
@@ -117,11 +116,14 @@ class QueryParser:
         for token in tokenized_fields:
             field_name, value = token.split(':')
             if "'" in value:
-                fields_tuples.append((field_name,"string",value))
+                fields_tuples.append((field_name,"string",value[1:-1]))
             elif value in ["true","false"]:
-                fields_tuples.append((field_name,"logic",value))
+                if value == 'true':
+                    fields_tuples.append((field_name,"logic",True))
+                else:
+                    fields_tuples.append((field_name,"logic",False))
             elif value.isdigit():
-                fields_tuples.append((field_name,"int",value))
+                fields_tuples.append((field_name,"int",int(value)))
             else:
                 query["type"] = AlarmResponse.PARSE_ERROR
                 return query
@@ -129,7 +131,6 @@ class QueryParser:
             query['fields'] = fields_tuples
         query['table_name'] = table_name
         return query
-
 
     @staticmethod
     def table_define_parser(query: dict):
