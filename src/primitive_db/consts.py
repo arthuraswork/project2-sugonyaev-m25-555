@@ -26,7 +26,6 @@ class TokenDatatype(Enum):
     INT    = "int"
     STRING = "string"
     LOGIC  = "logic"
-    ID     = "id"
 
 class TokenServiceWords(Enum):
     HELP = "help"
@@ -38,7 +37,7 @@ class AlarmResponse(Enum):
     TABLE_EXISTS = "таблица не создана, так как одноименная таблица уже есть"
     PARSE_ERROR  = "ошибка парсинга"  
     CORE_ERROR   = "ошибка в обработке запроса"
-    UNLNOWN_ERROR = "неизвестная ошибка"
+    UNKNOWN_ERROR = "неизвестная ошибка"
     
 class SuccessfullResponse(Enum):
     TABLE_CREATED = "таблица создана успешно"
@@ -59,3 +58,13 @@ RESERVED_WORDS = {
     'select', 'insert', 'update', 'delete', 'create', 'table', 'into', 'from',
     'where', 'values', 'set', 'and', 'or', 'true', 'false', 'if', 'help', 'exit'
 }
+
+COMP_FUNCS = {
+    '<': lambda x,y: True if x < y else False,
+    '>': lambda x,y: True if x > y else False,
+    '>=': lambda x,y: True if x >= y else False,
+    '<=': lambda x,y: True if x <= y else False,
+    '==': lambda x,y: True if x == y else False,
+    '!=': lambda x,y: True if x != y else False,
+    '~':  lambda x,y: True if x in y else False 
+    }

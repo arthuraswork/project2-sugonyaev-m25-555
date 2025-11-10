@@ -90,8 +90,8 @@ class QueryParser:
             
         if table_name:
             query["table_name"] = table_name
-            return query
-        query["type"] = AlarmResponse.PARSE_ERROR
+        else:
+            query["type"] = AlarmResponse.PARSE_ERROR
         return query
     @staticmethod
     def selecting_parser(query: dict) -> dict:
@@ -122,13 +122,25 @@ class QueryParser:
 
         if condition_list:
             query["condition"] = {"column_name":condition_list[0],"operation": condition_list[1], "value": condition_list[2]}
-
+            value = query["condition"]['value']
+            if "'" in value:
+                query["condition"]['value'] = value[1:-1]
+            elif value in ["true","false"]:
+                if value == 'true':
+                    query["condition"]['value'] = True
+                else:
+                    query["condition"]['value'] = False
+            elif value.isdigit():
+                query["condition"]['value'] = int(value)
+            else:
+                query["type"] = AlarmResponse.PARSE_ERROR
+                return query
         print(what, table_name)
         if table_name and what:
             query["table_name"] = table_name
             query["what"] = what
-            return query
-        query["type"] = AlarmResponse.PARSE_ERROR
+        else: 
+            query["type"] = AlarmResponse.PARSE_ERROR
         return query
 
     @staticmethod
@@ -213,8 +225,6 @@ class QueryParser:
                 if fields_flag:
 
                     if token in [datatype.value for datatype in TokenDatatype]:
-                        if token == TokenDatatype.ID:
-                            pass 
                         new_field_type = token
 
                     else:

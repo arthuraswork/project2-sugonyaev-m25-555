@@ -45,12 +45,14 @@ class RuntimeDB:
                     log.alarm(AlarmResponse.PARSE_ERROR.value)
                 
                 case TokensDML.SELECT:
-                    self.db.select(table_name=result["table_name"], what=result["what"])
+                    if result.get('condition'):
+                        print(self.db.select(table_name=result["table_name"], what=result["what"], condition=result['condition']))
+                    else:
+                        print(self.db.select(table_name=result["table_name"], what=result["what"]))
                 
                 case TokensDML.INSERT:
-                    self.db.insert(table_name=result["table_name"], fields=result["fields"])
+                    log.alarm(self.db.insert(table_name=result["table_name"], fields=result["fields"]))
                 case TokensDDL.DROP:
-
                     self.db.drop(table_name=result["table_name"])
                 case _:
                     ...
