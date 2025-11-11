@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from consts import AlarmResponse, SuccessfullResponse, DB_COMMANDS, COMP_FUNCS
+from consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS
 from utils import *
     
     
@@ -18,6 +18,11 @@ class DB:
         self.save_db_metadata()
         save_table_metadata(table_dict,table_name)
         
+    def table_info(self,table_name):
+        if table_name not in self.tables.keys():
+            return AlarmResponse.CORE_ERROR
+        return self.tables[table_name]
+        
     def insert(self, table_name, fields: dict):
         if table_name not in self.tables.keys():
             return AlarmResponse.CORE_ERROR
@@ -31,7 +36,6 @@ class DB:
         self.updata_table(inserting_data,table_name)
     def delete(self, table_name, column_name, operation, value):
         table_data = load_table_data(table_name)
-        print(table_data['data'])
         results = []
         for row in table_data['data']:
             if column_name not in row:
@@ -39,13 +43,25 @@ class DB:
             row_value = row[column_name]
             if operation in COMP_FUNCS:
                 if not COMP_FUNCS[operation](row_value, value):
-                    print(row_value, value)
                     results.append(row)
+        table_data['data'] = results
+        self.rewrite_table(table_data, table_name)
+        
+    def update(self, table_name, updating_column, new_value, column_name, operation, value):
+        table_data = load_table_data(table_name)
+        results = []
+        for row in table_data['data']:
+            if column_name not in row:
+                continue
+            cond_value = row[column_name]
+            if operation in COMP_FUNCS:
+                if COMP_FUNCS[operation](cond_value, value):
+                    row[updating_column] = new_value
+            results.append(row)
         print(results)
         table_data['data'] = results
         self.rewrite_table(table_data, table_name)
-    def update(self, table_name):
-        ...
+        
     def select_on_condition(self, table_name, column_name, operation, value):
         table_data = load_table_data(table_name)
         results = []
@@ -57,8 +73,8 @@ class DB:
             if operation in COMP_FUNCS:
                 if COMP_FUNCS[operation](row_value, value):
                     results.append(row)
-        return results
-    
+        table_data['data'] = results
+        return table_data
     def select(self,table_name, what, condition):
         if table_name not in self.tables.keys():
             return AlarmResponse.CORE_ERROR
@@ -79,8 +95,9 @@ class DB:
         save_table_metadata(new_data,table_name)
     def save_db_metadata(self):
         save_metadata(self.tables)
+        
     def list_tables(self):
-        print(load_metadata())
+        return load_metadata()
     def show_commands(self):
         print('\n'.join(DB_COMMANDS))
         
@@ -89,3 +106,4 @@ class DB:
             return AlarmResponse.CORE_ERROR
         del self.tables[table_name]
         save_metadata(self.tables)
+    

@@ -30,8 +30,9 @@ class QueryParser:
                 return {"type":TokenServiceWords.HELP}
             case "exit":
                 return {"type":TokenServiceWords.EXIT}
-            case "info":
+            case "list":
                 return {"type":TokenServiceWords.LIST}
+        return {'type': AlarmResponse.UNKNOWN_ERROR}
 
     def preprocessor(self, query: dict):
         """
@@ -80,7 +81,25 @@ class QueryParser:
                 "text": query["text"],
                 "type": TokensDDL.DROP
             })
-        return {"type":"_"}
+        if TokensDDL.INFO.value in query["text"]:
+            return self.__class__.table_info({
+                "text": query["text"],
+                "type": TokensDDL.INFO
+            })        
+        return {"type":AlarmResponse.UNKNOWN_ERROR}
+
+    @staticmethod
+    def table_info(query:dict) -> dict:
+        tokenized = query['text'].split()
+        for i, token in enumerate(tokenized):
+            if token == "info" and len(token) > i:
+                table_name = tokenized[i+1]
+                query['table_name'] = table_name
+                break
+        else:
+            query['type'] = AlarmResponse.PARSE_ERROR
+        return query
+                
 
     @staticmethod
     def droping_parser(query:dict) -> dict:
@@ -127,9 +146,11 @@ class QueryParser:
             if token == 'from' and len(tokenized) > i+1:
                 table_name = tokenized[i+1]
                 break
-
-        query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
-        query['table_name'] = table_name 
+        try:
+            query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
+            query['table_name'] = table_name 
+        except:
+            query['type'] = AlarmResponse.PARSE_ERROR
         return query
     
     @staticmethod
@@ -138,7 +159,7 @@ class QueryParser:
         table_name = ''
         condition = []
         new_value = None
-        column_name = ''
+        updating_column = ''
         flag_equal = False
         flag = False
         for token in tokenized:
@@ -150,7 +171,7 @@ class QueryParser:
                 elif token in ['true','false']:
                     condition.append(True if token == 'true' else False)
                 else:
-                    condition.append(token)
+                    condition.append(token[1:-1])
 
             if flag:
                 condition.append(token)
@@ -165,7 +186,7 @@ class QueryParser:
             if token == '}':
                 flag = False
             if flag and token != '=' and not flag_equal:
-                column_name = token
+                updating_column = token
 
             if flag and flag_equal:
                 if token.isdigit():
@@ -173,18 +194,20 @@ class QueryParser:
                 elif token in ['true','false']:
                     new_value = True if token == 'true' else False
                 else:
-                    new_value = token
+                    new_value = token[1:-1]
 
             if token == '=':
                 flag_equal = True
 
             if token == '{':
                 flag = True
-
-        query['column_name'] = column_name
-        query['new_value'] = new_value
-        query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
-        query['table_name'] = table_name 
+        try:
+            query['updating_column'] = updating_column
+            query['new_value'] = new_value
+            query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
+            query['table_name'] = table_name 
+        except:
+            query['type'] = AlarmResponse.PARSE_ERROR
         return query
     
     @staticmethod
@@ -209,7 +232,7 @@ class QueryParser:
             if condition_flag and token != "(":
                 condition_list.append(token)
 
-            if token in ["if","where"] and tokenized[i +1] == "(":
+            if token == "(":
                 condition_flag = True
             if tokenized[i-1] == "from":
                 table_name = token

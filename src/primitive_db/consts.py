@@ -12,6 +12,7 @@ class TokensDDL(Enum):
     CREATE = "create"
     TABLE  = "table"
     DROP   = "drop"
+    INFO   = "info"
 
 
 class TokenSymbols(Enum):
@@ -30,7 +31,7 @@ class TokenDatatype(Enum):
 class TokenServiceWords(Enum):
     HELP = "help"
     EXIT = "exit"
-    LIST = "info"
+    LIST = "list"
 
 
 class AlarmResponse(Enum):
@@ -47,7 +48,7 @@ DB_COMMANDS = [
     "insert into <имя_таблицы> values {<значение1>, <значение2>, ...} - создать запись",
     "select * from <имя_таблицы> where (<столбец> = <значение>) - прочитать записи по условию",
     "select * from <имя_таблицы> - прочитать все записи",
-    "update <имя_таблицы> set <столбец1> = <новое_значение1> where <столбец_условия> = <значение_условия> - обновить запись",
+    "update <имя_таблицы> set {<столбец1> = <новое_значение1>} where (<столбец_условия> = <значение_условия>) - обновить запись",
     "delete from <имя_таблицы> where <столбец> = <значение> - удалить запись",
     "info <имя_таблицы> - вывести информацию о таблице",
     "exit - выход из программы",
