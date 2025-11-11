@@ -1,7 +1,5 @@
 from consts import *
 
-
-
 class QueryParser:
     """
     Класс, отвечающий за парсинг страниц
@@ -147,7 +145,9 @@ class QueryParser:
                 table_name = tokenized[i+1]
                 break
         try:
-            query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
+            query['condition'] = {'column_name': condition[0],
+                                  'operation': condition[1], 
+                                  'value':condition[2]}
             query['table_name'] = table_name 
         except:
             query['type'] = AlarmResponse.PARSE_ERROR
@@ -179,11 +179,11 @@ class QueryParser:
                 flag = True
 
         for i, token in enumerate(tokenized):
-            if token == 'update' and len(tokenized) > i+1:
+            if token == TokensDML.UPDATE.value and len(tokenized) > i+1:
                 table_name = tokenized[i+1]
                 break
         for token in tokenized:
-            if token == '}':
+            if token == TokenSymbols.ENG_BRACES:
                 flag = False
             if flag and token != '=' and not flag_equal:
                 updating_column = token
@@ -199,7 +199,7 @@ class QueryParser:
             if token == '=':
                 flag_equal = True
 
-            if token == '{':
+            if token == TokenSymbols.BEGIN_BRACES:
                 flag = True
         try:
             query['updating_column'] = updating_column
@@ -226,13 +226,13 @@ class QueryParser:
             if i > 0 and tokenized[i-1] == "select":
                 what = token
                 
-            if token == ")" and condition_flag:
+            if token == TokenSymbols.ENG_PARENTH.value and condition_flag:
                 condition_flag = False
 
-            if condition_flag and token != "(":
+            if condition_flag and token != TokenSymbols.BEGIN_PARENTH.value:
                 condition_list.append(token)
 
-            if token == "(":
+            if token == TokenSymbols.BEGIN_PARENTH.value:
                 condition_flag = True
             if tokenized[i-1] == "from":
                 table_name = token
@@ -272,8 +272,8 @@ class QueryParser:
                 table_name = tokenized[i + 1]
                 break
         
-        start = text.find('{')
-        end = text.find('}')
+        start = text.find(TokenSymbols.BEGIN_BRACES.value)
+        end = text.find(TokenSymbols.ENG_BRACES.value)
         if start != -1 and end != -1:
             fields_text = text[start + 1:end].strip()
         

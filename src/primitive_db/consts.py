@@ -42,7 +42,7 @@ class AlarmResponse(Enum):
     
 class SuccessfullResponse(Enum):
     TABLE_CREATED = "таблица создана успешно"
-    SUCCESSFULL   = "операция выполнена успешка"
+    SUCCESSFULL   = "операция выполнена успешно"
 
 DB_COMMANDS = [
     "insert into <имя_таблицы> values {<значение1>, <значение2>, ...} - создать запись",
@@ -69,3 +69,5 @@ COMP_FUNCS = {
     '!=': lambda x,y: True if x != y else False,
     '~':  lambda x,y: True if x in y else False 
     }
+ALLCOLUMNS = '*'
+METAFILE = "db_meta.json"
