@@ -1,5 +1,5 @@
 import json
-from consts import METAFILE
+from .consts import METAFILE
 
 def load_metadata(filepath=METAFILE):
     try:

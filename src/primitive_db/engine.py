@@ -1,11 +1,11 @@
 import prompt
 from prettytable import PrettyTable
-from parser import QueryParser
+from .parser import QueryParser
 from dataclasses import dataclass
-from consts import (
+from .consts import (
     TokensDDL, AlarmResponse, TokenServiceWords, TokensDML
 )
-from core import DB
+from .core import DB
 
 @dataclass
 class RuntimeDB:

@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "name": "Moshe",
+      "money": 100,
+      "id": 1
+    }
+  ],
+  "columns": {
+    "id": "int",
+    "name": "str",
+    "money": "int"
+  }
+}

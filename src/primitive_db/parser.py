@@ -1,4 +1,5 @@
-from consts import *
+from .consts import (TokenDatatype, TokensDDL, TokensDML, TokenServiceWords,
+                        AlarmResponse,TokenSymbols, BOOLVALS,)
 
 class QueryParser:
     """

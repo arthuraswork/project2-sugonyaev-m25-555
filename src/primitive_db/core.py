@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS, ALLCOLUMNS
-from utils import *
+from .consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS, ALLCOLUMNS
+from .utils import *
     
     
 @dataclass

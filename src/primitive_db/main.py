@@ -1,4 +1,4 @@
-from engine import RuntimeDB
+from .engine import RuntimeDB
 
 def main():
     runtime = RuntimeDB()
