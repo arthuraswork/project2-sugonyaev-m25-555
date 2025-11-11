@@ -14,6 +14,7 @@ class TokensDDL(Enum):
     DROP   = "drop"
     INFO   = "info"
 
+BOOLVALS = ['true', 'false','True','False']
 
 class TokenSymbols(Enum):
     BEGIN_BRACES  = "{"

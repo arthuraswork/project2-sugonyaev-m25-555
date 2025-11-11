@@ -130,7 +130,7 @@ class QueryParser:
             if flag and len(condition) == 2:
                 if token.isdigit():
                     condition.append(int(token))
-                elif token in ['true','false']:
+                elif token in BOOLVALS:
                     condition.append(True if token == 'true' else False)
                 else:
                     condition.append(token[1:-1])
@@ -168,7 +168,7 @@ class QueryParser:
             if flag and len(condition) == 2:
                 if token.isdigit():
                     condition.append(int(token))
-                elif token in ['true','false']:
+                elif token in BOOLVALS:
                     condition.append(True if token == 'true' else False)
                 else:
                     condition.append(token[1:-1])
@@ -191,7 +191,7 @@ class QueryParser:
             if flag and flag_equal:
                 if token.isdigit():
                     new_value = int(token)
-                elif token in ['true','false']:
+                elif token in BOOLVALS:
                     new_value = True if token == 'true' else False
                 else:
                     new_value = token[1:-1]
