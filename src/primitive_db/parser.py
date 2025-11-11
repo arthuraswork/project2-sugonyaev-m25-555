@@ -37,7 +37,7 @@ class QueryParser:
         """
         подготаваливает текст запроса для более удобного парсинга
         """
-        processed = query["text"].lower().strip()
+        processed = query["text"].strip()
         for char in list(TokenSymbols):
             processed = processed.replace(char.value, f' {char.value} ')
         query["text"] = processed
@@ -52,6 +52,11 @@ class QueryParser:
                 "text": query["text"],
                 "type": TokensDML.SELECT
             })
+        if TokensDML.DELETE.value in query["text"]:
+            return self.__class__.deleting_parser({
+                "text": query["text"],
+                "type": TokensDML.DELETE
+            })
             
         if TokensDML.INSERT.value in query["text"]:
             return self.__class__.inserting_parser({
@@ -64,6 +69,12 @@ class QueryParser:
                 "text": query["text"],
                 "type": TokensDDL.CREATE
             })
+        if TokensDML.UPDATE.value in query["text"]:
+            return self.__class__.updating_parser({
+                "text": query["text"],
+                "type": TokensDML.UPDATE
+            })            
+            
         if TokensDDL.DROP.value in query["text"]:
             return self.__class__.droping_parser({
                 "text": query["text"],
@@ -89,6 +100,93 @@ class QueryParser:
         else:
             query["type"] = AlarmResponse.PARSE_ERROR
         return query
+    
+    @staticmethod
+    def deleting_parser(query: dict) -> dict:
+        tokenized = query['text'].split()
+        table_name = ''
+        condition = []
+        flag = False
+        for token in tokenized:
+            if token == ')':
+                flag = False
+            if flag and len(condition) == 2:
+                if token.isdigit():
+                    condition.append(int(token))
+                elif token in ['true','false']:
+                    condition.append(True if token == 'true' else False)
+                else:
+                    condition.append(token[1:-1])
+
+            if flag:
+                condition.append(token)
+            if token == '(':
+                flag = True
+
+        for i, token in enumerate(tokenized):
+            if token == 'from' and len(tokenized) > i+1:
+                table_name = tokenized[i+1]
+                break
+
+        query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
+        query['table_name'] = table_name 
+        return query
+    
+    @staticmethod
+    def updating_parser(query: dict) -> dict:
+        tokenized = query['text'].split()
+        table_name = ''
+        condition = []
+        new_value = None
+        column_name = ''
+        flag_equal = False
+        flag = False
+        for token in tokenized:
+            if token == ')':
+                flag = False
+            if flag and len(condition) == 2:
+                if token.isdigit():
+                    condition.append(int(token))
+                elif token in ['true','false']:
+                    condition.append(True if token == 'true' else False)
+                else:
+                    condition.append(token)
+
+            if flag:
+                condition.append(token)
+            if token == '(':
+                flag = True
+
+        for i, token in enumerate(tokenized):
+            if token == 'update' and len(tokenized) > i+1:
+                table_name = tokenized[i+1]
+                break
+        for token in tokenized:
+            if token == '}':
+                flag = False
+            if flag and token != '=' and not flag_equal:
+                column_name = token
+
+            if flag and flag_equal:
+                if token.isdigit():
+                    new_value = int(token)
+                elif token in ['true','false']:
+                    new_value = True if token == 'true' else False
+                else:
+                    new_value = token
+
+            if token == '=':
+                flag_equal = True
+
+            if token == '{':
+                flag = True
+
+        query['column_name'] = column_name
+        query['new_value'] = new_value
+        query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
+        query['table_name'] = table_name 
+        return query
+    
     @staticmethod
     def selecting_parser(query: dict) -> dict:
         """

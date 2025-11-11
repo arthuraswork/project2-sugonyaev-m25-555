@@ -29,20 +29,34 @@ class DB:
             else:
                 return AlarmResponse.CORE_ERROR
         self.updata_table(inserting_data,table_name)
-    
-    def select_on_condition(self, table_name, column_name, operation, value):
-        table_data = load_table_data(table_name),
+    def delete(self, table_name, column_name, operation, value):
+        table_data = load_table_data(table_name)
+        print(table_data['data'])
         results = []
         for row in table_data['data']:
             if column_name not in row:
                 continue
-                
+            row_value = row[column_name]
+            if operation in COMP_FUNCS:
+                if not COMP_FUNCS[operation](row_value, value):
+                    print(row_value, value)
+                    results.append(row)
+        print(results)
+        table_data['data'] = results
+        self.rewrite_table(table_data, table_name)
+    def update(self, table_name):
+        ...
+    def select_on_condition(self, table_name, column_name, operation, value):
+        table_data = load_table_data(table_name)
+        results = []
+        for row in table_data['data']:
+            if column_name not in row:
+                continue
             row_value = row[column_name]
             
             if operation in COMP_FUNCS:
                 if COMP_FUNCS[operation](row_value, value):
                     results.append(row)
-                    
         return results
     
     def select(self,table_name, what, condition):
@@ -53,6 +67,7 @@ class DB:
         else:
             if what == '*':
                 return load_table_data(table_name)
+            
     def update_db_metadata(self):
         self.tables = load_metadata()
     def updata_table(self,new_data,table_name):
@@ -60,7 +75,17 @@ class DB:
         new_data['id'] = len(table_data['data'])+1
         table_data['data'].append(new_data)
         save_table_metadata(table_data,table_name)
+    def rewrite_table(self,new_data,table_name):
+        save_table_metadata(new_data,table_name)
     def save_db_metadata(self):
         save_metadata(self.tables)
     def list_tables(self):
         print(load_metadata())
+    def show_commands(self):
+        print('\n'.join(DB_COMMANDS))
+        
+    def drop_table(self,table_name):
+        if table_name not in self.tables.keys():
+            return AlarmResponse.CORE_ERROR
+        del self.tables[table_name]
+        save_metadata(self.tables)

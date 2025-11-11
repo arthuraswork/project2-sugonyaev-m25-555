@@ -11,8 +11,8 @@ class TokensDML(Enum):
 class TokensDDL(Enum):
     CREATE = "create"
     TABLE  = "table"
-    LOAD   = "load"
     DROP   = "drop"
+
 
 class TokenSymbols(Enum):
     BEGIN_BRACES  = "{"

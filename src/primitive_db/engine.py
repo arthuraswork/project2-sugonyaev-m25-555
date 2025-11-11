@@ -49,7 +49,11 @@ class RuntimeDB:
                 
                 case TokensDML.INSERT:
                     self.db.insert(table_name=result["table_name"], fields=result["fields"])
+                    
+                case TokensDML.DELETE:
+                    self.db.delete(table_name=result["table_name"], column_name=result['condition']['column_name'], operation=result['condition']['operation'], value=result['condition']['value'])
+                                
                 case TokensDDL.DROP:
-                    self.db.drop(table_name=result["table_name"])
+                    self.db.drop_table(table_name=result["table_name"])
                 case _:
                     ...
