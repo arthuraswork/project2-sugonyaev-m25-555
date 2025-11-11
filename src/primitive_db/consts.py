@@ -24,8 +24,8 @@ class TokenSymbols(Enum):
 
 class TokenDatatype(Enum):
     INT    = "int"
-    STRING = "string"
-    LOGIC  = "logic"
+    STRING = "str"
+    LOGIC  = "bool"
 
 class TokenServiceWords(Enum):
     HELP = "help"

@@ -1,5 +1,5 @@
 from consts import *
-from logger import log
+
 
 
 class QueryParser:
@@ -48,27 +48,23 @@ class QueryParser:
         типизирует команды
         """
         if TokensDML.SELECT.value in query["text"]:
-            log.info(TokensDDL.CREATE.value)
             return self.__class__.selecting_parser({
                 "text": query["text"],
                 "type": TokensDML.SELECT
             })
             
         if TokensDML.INSERT.value in query["text"]:
-            log.info(TokensDDL.CREATE)
             return self.__class__.inserting_parser({
                 "text": query["text"],
                 "type": TokensDML.INSERT
             })
 
         if TokensDDL.CREATE.value in query["text"]:
-            log.info(TokensDDL.CREATE)
             return self.__class__.table_define_parser({
                 "text": query["text"],
                 "type": TokensDDL.CREATE
             })
         if TokensDDL.DROP.value in query["text"]:
-            log.info(TokensDDL.DROP)
             return self.__class__.droping_parser({
                 "text": query["text"],
                 "type": TokensDDL.DROP
@@ -135,7 +131,6 @@ class QueryParser:
             else:
                 query["type"] = AlarmResponse.PARSE_ERROR
                 return query
-        print(what, table_name)
         if table_name and what:
             query["table_name"] = table_name
             query["what"] = what
@@ -145,57 +140,45 @@ class QueryParser:
 
     @staticmethod
     def inserting_parser(query: dict) -> dict:
-        """
-        обрабатывает инсерт запрос
-        """
-        fields_flag = False
-        fields_not_parsed = ""
-        tokenized = query.get("text").split()
+        text = query.get("text")
+        tokenized = text.split()
 
-        for char in query.get('text').split():
-
-            if char == "}":
-                break
-
-            if fields_flag:
-                fields_not_parsed += char
-
-            if char == "{":
-                fields_flag = True
-
-        table_flag = False 
         table_name = ""
-
-        for token in tokenized:
-            if table_flag:
-                table_name = token
-                table_flag = False
-
-            if token == "into":
-                table_flag = True
-                
-        fields_tuples = []
-        tokenized_fields = fields_not_parsed.split(',')
+        fields_text = ""
+    
+        for i, token in enumerate(tokenized):
+            if token == "into" and i + 1 < len(tokenized):
+                table_name = tokenized[i + 1]
+                break
         
-        for token in tokenized_fields:
-            field_name, value = token.split(':')
-            if "'" in value:
-                fields_tuples.append((field_name,"string",value[1:-1]))
-            elif value in ["true","false"]:
-                if value == 'true':
-                    fields_tuples.append((field_name,"logic",True))
-                else:
-                    fields_tuples.append((field_name,"logic",False))
+        start = text.find('{')
+        end = text.find('}')
+        if start != -1 and end != -1:
+            fields_text = text[start + 1:end].strip()
+        
+        fields_dict = {}
+        for field_pair in fields_text.split(','):
+            if ':' not in field_pair:
+                query["type"] = AlarmResponse.PARSE_ERROR
+                return query
+                
+            field_name, value = field_pair.split(':', 1)
+            field_name = field_name.strip()
+            value = value.strip()
+            
+            if value.startswith("'") and value.endswith("'"):
+                fields_dict[field_name] = value[1:-1]
+            elif value in ["true", "false"]:
+                fields_dict[field_name] = value == "true"
             elif value.isdigit():
-                fields_tuples.append((field_name,"int",int(value)))
+                fields_dict[field_name] = int(value)
             else:
                 query["type"] = AlarmResponse.PARSE_ERROR
                 return query
-        else:
-            query['fields'] = fields_tuples
-        query['table_name'] = table_name
-        return query
 
+        query['table_name'] = table_name
+        query['fields'] = fields_dict
+        return query
     @staticmethod
     def table_define_parser(query: dict):
         

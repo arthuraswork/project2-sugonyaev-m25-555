@@ -1,106 +1,66 @@
 from dataclasses import dataclass
 from consts import AlarmResponse, SuccessfullResponse, DB_COMMANDS, COMP_FUNCS
-
-@dataclass
-class Table:
-    """
-    Описывает одну таблицу
-    name отвечает за имя таблицы
-    fields отвечает за содержание таблицы
-    """
-    name: str
-    fields: dict[str, list]
+from utils import *
     
-    def __repr__(self):
-        return f"{self.name}: {self.fields}"
     
-    def post(self, values: tuple):
-        """добавляет значения в таблицу"""
-        copied_table = dict(self.fields)
-        for field, datatype, value in values:
-            key = '-'.join((field,datatype))
-            if key in self.fields:
-                copied_table[key].append(value)
-            else:
-                return AlarmResponse.CORE_ERROR
-        self.fields = copied_table
-        self.fields['id-int'].append(len(self.fields['id-int'])+1)
-    
-    def all(self):
-        """возвращает все данные таблицы"""
-        return self.fields
-    
-    def with_condition(self, column_name, operation, value):
-        resultings = [] 
-        vals = list(self.fields.values())
-        print(column_name, operation, value)
-        if isinstance(value, int):
-            dt = 'int'
-        elif isinstance(value, str):
-            dt = 'string'
-        elif isinstance(value, bool):
-            dt = 'logic'
-        else:
-            return AlarmResponse.CORE_ERROR
-        typed_column = column_name+'-'+dt
-        if self.fields.get(typed_column):
-            key = self.fields[typed_column]
-            for f,v in enumerate(zip(*vals)):
-                if COMP_FUNCS[operation](value,key[f]):
-                    resultings.append(v)
-
-        return resultings 
 @dataclass
 class DB:
     def __init__(self):
-        self.tables = dict()
-
-    def create_table(self, table_name: str, fields: list):
-        if table_name not in self.tables:
-            if ('id','int') not in fields:
-                fields.insert(0, ('id','int'))
-            fields_dict = {'-'.join(field): [] for field in fields}
- 
-            new_table = Table(table_name, fields_dict)
-            self.tables[table_name] = new_table
-            print(self.tables)
-            return SuccessfullResponse.TABLE_CREATED
-        else:
-            return AlarmResponse.TABLE_EXISTS
+        self.tables: dict = dict()
+    def create_table(self, table_name, fields: list[tuple[str,str]]):
+        if ('id','int') not in fields:
+            fields.insert(0,('id','int'))
+        field_dict = {field[0]:field[1] for field in fields}
+        table_dict = {}
+        table_dict['data'] = []
+        table_dict['columns'] = field_dict
+        self.tables[table_name] = field_dict
+        self.save_db_metadata()
+        save_table_metadata(table_dict,table_name)
         
-    def insert(self, table_name, fields: tuple):  
-        table = self.tables.get(table_name)
-        if table:  
-            table.post(fields)
-            return SuccessfullResponse.SUCCESSFULL
-        return AlarmResponse.CORE_ERROR
-
-    def select(self, what, table_name, condition=None):
-        if what == '*':
-            table = self.tables.get(table_name)
-            if table:
-                if condition:
-                    return table.with_condition(condition['column_name'], condition['operation'],condition['value'])
-                return table.all()
+    def insert(self, table_name, fields: dict):
+        if table_name not in self.tables.keys():
+            return AlarmResponse.CORE_ERROR
+        table_fields = list(self.tables.get(table_name).keys())
+        inserting_data = {}
+        for field in fields:
+            if field in table_fields:
+                inserting_data[field] = fields[field]
             else:
-                print(f"Таблица {table_name} не существует")
+                return AlarmResponse.CORE_ERROR
+        self.updata_table(inserting_data,table_name)
     
-    def update(self, condition, table_name):
-        pass
+    def select_on_condition(self, table_name, column_name, operation, value):
+        table_data = load_table_data(table_name),
+        results = []
+        for row in table_data['data']:
+            if column_name not in row:
+                continue
+                
+            row_value = row[column_name]
+            
+            if operation in COMP_FUNCS:
+                if COMP_FUNCS[operation](row_value, value):
+                    results.append(row)
+                    
+        return results
     
-    def remove(self, condition, table_name):
-        pass
-    def commit(self):
-        ...
-        
-    def drop(self,table_name:str):
-        table = self.tables.get(table_name)
-        if table:  
-            del self.tables[table_name]
-            return SuccessfullResponse.SUCCESSFULL
-        return AlarmResponse.CORE_ERROR
-    
+    def select(self,table_name, what, condition):
+        if table_name not in self.tables.keys():
+            return AlarmResponse.CORE_ERROR
+        if condition:
+            return self.select_on_condition(table_name, condition['column_name'],condition['operation'],condition['value'])
+        else:
+            if what == '*':
+                return load_table_data(table_name)
+    def update_db_metadata(self):
+        self.tables = load_metadata()
+    def updata_table(self,new_data,table_name):
+        table_data = load_table_data(table_name)
+        new_data['id'] = len(table_data['data'])+1
+        table_data['data'].append(new_data)
+        save_table_metadata(table_data,table_name)
+    def save_db_metadata(self):
+        save_metadata(self.tables)
     def list_tables(self):
-        print(self.tables)    
-    def show_commands(self):
-        print("\n" + "\n".join(DB_COMMANDS) + "\n")
+        print(load_metadata())
