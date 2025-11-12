@@ -3,7 +3,7 @@ from prettytable import PrettyTable
 from .parser import QueryParser
 from dataclasses import dataclass
 from .consts import (
-    TokensDDL, AlarmResponse, TokenServiceWords, TokensDML
+    TokensDDL, TokenServiceWords, TokensDML
 )
 from .core import DB
 

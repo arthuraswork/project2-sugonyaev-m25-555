@@ -150,8 +150,9 @@ class QueryParser:
                                   'operation': condition[1], 
                                   'value':condition[2]}
             query['table_name'] = table_name 
-        except:
+        except Exception as e:
             query['type'] = AlarmResponse.PARSE_ERROR
+            query['message'] = e
         return query
     
     @staticmethod
@@ -207,8 +208,9 @@ class QueryParser:
             query['new_value'] = new_value
             query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
             query['table_name'] = table_name 
-        except:
+        except Exception as e:
             query['type'] = AlarmResponse.PARSE_ERROR
+            query['message'] = e
         return query
     
     @staticmethod

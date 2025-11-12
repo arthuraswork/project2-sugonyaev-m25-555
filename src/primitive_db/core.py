@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from .consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS, ALLCOLUMNS
-from .utils import *
+from .utils import save_metadata, save_table_metadata, load_metadata, load_table_data
+from .decorators import handler_confirm
     
     
 @dataclass
@@ -33,7 +34,7 @@ class DB:
         if table_name not in self.tables.keys():
             return AlarmResponse.CORE_ERROR
         return self.tables[table_name]
-        
+    
     def insert(self, table_name, fields: dict):
         """
         Вставка записи в таблицу
@@ -48,6 +49,7 @@ class DB:
             else:
                 return AlarmResponse.CORE_ERROR
         self.update_table(inserting_data,table_name)
+
     def delete(self, table_name, column_name, operation, value):
         """
         Удаление записей из таблицы по условию
@@ -80,7 +82,7 @@ class DB:
             results.append(row)
         table_data['data'] = results
         self.rewrite_table(table_data, table_name)
-        
+
     def select_on_condition(self, table_name, column_name, operation, value):
         """
         Выбор записей из таблицы по условию
@@ -97,6 +99,7 @@ class DB:
                     results.append(row)
         table_data['data'] = results
         return table_data
+    
     def select(self,table_name, what, condition):
         """
         Выбор всех записей из таблицы если нет условия
@@ -128,6 +131,7 @@ class DB:
         Перезаписывает результат в файл таблицы
         """
         save_table_metadata(new_data,table_name)
+
     def save_db_metadata(self):
         """
         Перезаписывает метаинформацию о таблицах в файл
@@ -139,12 +143,13 @@ class DB:
         Выводит информацию о таблицах
         """
         return load_metadata()
+    
     def show_commands(self):
         """
         Выводит список комманд
         """
         print('\n'.join(DB_COMMANDS))
-        
+    @handler_confirm
     def drop_table(self,table_name):
         """
         Удаление таблицы из метафайла и кэша

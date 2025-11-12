@@ -30,6 +30,7 @@ prettytable = "^3.16.0"
 
 [tool.poetry.scripts]
 project = "src.primitive_db.main:main"
+database = "src.primitive_db.main:main"
 
 [[tool.poetry.packages]]
 include = "src"
