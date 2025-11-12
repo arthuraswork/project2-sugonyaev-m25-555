@@ -1,6 +1,10 @@
 from .engine import RuntimeDB
 
+
 def main():
+    """
+    запускает цикл работы бд
+    """
     runtime = RuntimeDB()
     runtime.update_db()
     while True:

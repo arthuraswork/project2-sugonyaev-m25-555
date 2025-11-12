@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class TokensDML(Enum):
     INSERT = "insert"
     SELECT = "select"
@@ -53,15 +54,15 @@ DB_COMMANDS = [
     "delete from <имя_таблицы> where <столбец> = <значение> - удалить запись",
     "info <имя_таблицы> - вывести информацию о таблице",
     "exit - выход из программы",
-    "help - справочная информация"
+    "help - справочная информация",
+    "drop table <имя>"
 ]
 
-RESERVED_WORDS = {
-    'select', 'insert', 'update', 'delete', 'create', 'table', 'into', 'from',
-    'where', 'values', 'set', 'and', 'or', 'true', 'false', 'if', 'help', 'exit'
-}
-
 COMP_FUNCS = {
+
+    """
+    Операции сравнения
+    """
     '<': lambda x,y: True if x < y else False,
     '>': lambda x,y: True if x > y else False,
     '>=': lambda x,y: True if x >= y else False,

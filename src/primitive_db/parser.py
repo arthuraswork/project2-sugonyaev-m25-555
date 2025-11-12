@@ -1,5 +1,13 @@
-from .consts import (TokenDatatype, TokensDDL, TokensDML, TokenServiceWords,
-                        AlarmResponse,TokenSymbols, BOOLVALS,)
+from .consts import (
+    BOOLVALS,
+    AlarmResponse,
+    TokenDatatype,
+    TokensDDL,
+    TokensDML,
+    TokenServiceWords,
+    TokenSymbols,
+)
+
 
 class QueryParser:
     """
@@ -45,7 +53,7 @@ class QueryParser:
         return self.query_typing(query)
     def query_typing(self, query: dict):
         """
-        типизирует команды
+        типизирует команды по методам
         """
         if TokensDML.SELECT.value in query["text"]:
             return self.__class__.selecting_parser({
@@ -89,6 +97,9 @@ class QueryParser:
 
     @staticmethod
     def table_info(query:dict) -> dict:
+        """
+        обрабатывает запрос информация о таблице
+        """
         tokenized = query['text'].split()
         for i, token in enumerate(tokenized):
             if token == "info" and len(token) > i:
@@ -103,7 +114,7 @@ class QueryParser:
     @staticmethod
     def droping_parser(query:dict) -> dict:
         """
-        обрабатывает дроп тэйбл запрос
+        обрабатывает запрос удаления таблицы
         """
         tokenized = query["text"].split()
         table_name = ""
@@ -121,6 +132,9 @@ class QueryParser:
     
     @staticmethod
     def deleting_parser(query: dict) -> dict:
+        """
+        обрабатывает запросы удаления записи
+        """
         tokenized = query['text'].split()
         table_name = ''
         condition = []
@@ -152,11 +166,14 @@ class QueryParser:
             query['table_name'] = table_name 
         except Exception as e:
             query['type'] = AlarmResponse.PARSE_ERROR
-            query['message'] = 'Ошибка в запросе'
+            query['message'] = f'Ошибка в запросе: {e}'
         return query
     
     @staticmethod
     def updating_parser(query: dict) -> dict:
+        """
+        обрабатывает запросы на обновление записи
+        """
         tokenized = query['text'].split()
         condition = []
         flag_equal = False
@@ -205,11 +222,15 @@ class QueryParser:
         try:
             query['updating_column'] = updating_column
             query['new_value'] = new_value
-            query['condition'] = {'column_name': condition[0],'operation': condition[1], 'value':condition[2]}
+            query['condition'] = {
+                'column_name': condition[0],''
+                'operation': condition[1],
+                'value':condition[2]
+                }
             query['table_name'] = table_name 
         except Exception as e:
             query['type'] = AlarmResponse.PARSE_ERROR
-            query['message'] = 'Ошибка в запросе'
+            query['message'] = f'Ошибка в запросе: {e}'
         return query
     
     @staticmethod
@@ -240,7 +261,11 @@ class QueryParser:
                 table_name = token
 
         if condition_list:
-            query["condition"] = {"column_name":condition_list[0],"operation": condition_list[1], "value": condition_list[2]}
+            query["condition"] = {
+                "column_name":condition_list[0],
+                "operation": condition_list[1],
+                "value": condition_list[2]
+                }
             value = query["condition"]['value']
             if "'" in value:
                 query["condition"]['value'] = value[1:-1]
@@ -263,6 +288,9 @@ class QueryParser:
 
     @staticmethod
     def inserting_parser(query: dict) -> dict:
+        """
+        обрабатывает инсерт-запросы
+        """
         text = query.get("text")
         tokenized = text.split()
 
@@ -304,7 +332,9 @@ class QueryParser:
         return query
     @staticmethod
     def table_define_parser(query: dict):
-        
+        """
+        обрабатывает запросы создания таблицы
+        """
         new_field_type = ""
         fields = list()
         fields_flag = False

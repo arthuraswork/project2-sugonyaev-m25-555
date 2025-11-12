@@ -1,9 +1,22 @@
 from dataclasses import dataclass
-from .consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS, ALLCOLUMNS, SuccessfullResponse
-from .utils import save_metadata, save_table_metadata, load_metadata, load_table_data
-from .decorators import handler_confirm, hander_log
-    
-    
+
+from .consts import (
+    ALLCOLUMNS,
+    COMP_FUNCS,
+    DB_COMMANDS,
+    AlarmResponse,
+    SuccessfullResponse,
+)
+from .decorators import hander_log, handler_confirm
+from .utils import (
+    delete_table,
+    load_metadata,
+    load_table_data,
+    save_metadata,
+    save_table_metadata,
+)
+
+
 @dataclass
 class DB:
     """
@@ -15,7 +28,8 @@ class DB:
         self.tables: dict = dict()
     def create_table(self, table_name, fields: list[tuple[str,str]]):
         """
-        Создание базы данных - сохраняет метаданные и данные таблицы в разные файлы
+        Создание базы данных - 
+        сохраняет метаданные и данные таблицы в разные файлы
         """
         if ('id','int') not in fields:
             fields.insert(0,('id','int'))
@@ -66,7 +80,9 @@ class DB:
         table_data['data'] = results
         return self.rewrite_table(table_data, table_name)
     @hander_log   
-    def update(self, table_name, updating_column, new_value, column_name, operation, value):
+    def update(self, table_name, 
+                updating_column, new_value,
+                column_name, operation, value):
         """
         Обновление данных в записях по условию
         """
@@ -108,7 +124,10 @@ class DB:
         if table_name not in self.tables.keys():
             return AlarmResponse.CORE_ERROR
         if condition:
-            return self.select_on_condition(table_name, condition['column_name'],condition['operation'],condition['value'])
+            return self.select_on_condition(
+                table_name, condition['column_name'],
+                condition['operation'],condition['value']
+                )
         else:
             if what == ALLCOLUMNS:
                 return load_table_data(table_name)
@@ -151,6 +170,10 @@ class DB:
         Выводит список комманд
         """
         print('\n'.join(DB_COMMANDS))
+
+    def exit(self):
+        exit('досвидания')
+    
     @handler_confirm
     def drop_table(self,table_name):
         """
@@ -159,5 +182,6 @@ class DB:
         if table_name not in self.tables.keys():
             return AlarmResponse.CORE_ERROR
         del self.tables[table_name]
+        delete_table(table_name)
         save_metadata(self.tables)
     

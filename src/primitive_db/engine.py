@@ -1,34 +1,50 @@
+from dataclasses import dataclass
+
 import prompt
 from prettytable import PrettyTable
-from .parser import QueryParser
-from dataclasses import dataclass
-from .consts import (
-    TokensDDL, TokenServiceWords, TokensDML
-)
-from .decorators import hander_timer
+
+from .consts import TokensDDL, TokensDML, TokenServiceWords
 from .core import DB
+from .decorators import hander_timer
+from .parser import QueryParser
+
+
+def typer(i:str):
+    """типизирует колонки для вывода в консоль"""
+    return 'str' if isinstance(i,str) else 'int' if (i,int) and str(i).isdigit() else 'bool'
 
 @dataclass
 class RuntimeDB:
+    """
+    движек - обеспечивает работу и связь парсера и ядра, 
+    распределения запросы по типам в нужные функции ядра и выводит результат
+    """
+
+
     parser = QueryParser() 
     db     = DB()
     
     def update_db(self):
+        """
+        загружает метаинформацию в базу
+        """
         self.db.update_db_metadata()
 
 
     def user_prompt(self):
+        """
+        безопасный промпт - обрабатывает и печатает ошибки
+        """
         try:
             user_input = prompt.string(prompt="primitive@db:~$")
             self.resulting(self.parser.parse(user_input))
         except Exception as e:
             print(e)
 
-    def unsafe(self):
-        user_input = prompt.string(prompt="primitive@db:~!>")
-        self.resulting(self.parser.parse(user_input))
-        
     def draw_list_results(self,tables):
+        """
+        рисует информацию о всех таблицах
+        """
         table = PrettyTable()
         table.field_names = ['table name','columns', 'datatypes']
         for t in list(tables.keys()):
@@ -37,8 +53,10 @@ class RuntimeDB:
                 )
         print(table)
 
-    def draw_select_results(self,data=None):
-        typer = lambda i: 'str' if isinstance(i,str) else 'int' if isinstance(i,int) else 'bool'
+    def draw_select_results(self,data: list[dict]):
+        """
+        рисует результат селект-запроса
+        """
         table = PrettyTable()
         if data:
             table.field_names = [f'{k}: {typer(v)}' for k,v in list(data[0].items())]
@@ -46,21 +64,37 @@ class RuntimeDB:
                 table.add_row(list(row.values()))
         print(table)
 
+    def draw_info_results(self,data):
+        """
+        рисует общую информацию о таблице
+        """
+        table = PrettyTable()
+        if data:
+            table.field_names = [
+                f'{k}: {typer(v)}' for k,v in list(data.items())
+                ]
+            print(table)
     @hander_timer
     def resulting(self,result: dict):
+        """
+        обрабатывает результат парсинга
+        """
         response_type = result.get("type")
         if result.get("message"):
             print(result["message"], result['type'])
         if response_type:
             match response_type:
+
                 case TokensDDL.CREATE:
-                    self.db.create_table(table_name=result["table_name"], fields=result["fields"])  
+                    self.db.create_table(
+                        table_name=result["table_name"], fields=result["fields"]
+                        )  
 
                 case TokenServiceWords.HELP:
                     self.db.show_commands()
                     
                 case TokensDDL.INFO:
-                    self.draw_select_results(names=self.db.table_info(result['table_name']))
+                    self.draw_info_results(self.db.table_info(result["table_name"]))
                 
                 case TokenServiceWords.LIST:
                     self.draw_list_results(self.db.list_tables())
@@ -85,10 +119,13 @@ class RuntimeDB:
                         self.draw_select_results(
                             data=selecting_result['data']
                         )
-                        
+                case TokenServiceWords.EXIT:
+                    self.db.exit()
                 
                 case TokensDML.INSERT:
-                    self.db.insert(table_name=result["table_name"], fields=result["fields"])
+                    self.db.insert(
+                        table_name=result["table_name"], fields=result["fields"]
+                        )
                     
                 case TokensDML.DELETE:
                     self.db.delete(
