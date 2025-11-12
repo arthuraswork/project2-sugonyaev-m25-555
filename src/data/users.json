@@ -1,0 +1,29 @@
+{
+  "data": [
+    {
+      "name": "Moshe",
+      "money": 123,
+      "id": 1
+    },
+    {
+      "name": "Arthur",
+      "money": 100,
+      "id": 2
+    },
+    {
+      "name": "Benjamin",
+      "money": 146,
+      "id": 3
+    },
+    {
+      "name": "Shmutz",
+      "money": 213,
+      "id": 4
+    }
+  ],
+  "columns": {
+    "id": "int",
+    "name": "str",
+    "money": "int"
+  }
+}

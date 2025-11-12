@@ -1,0 +1,9 @@
+{
+  "data": [],
+  "columns": {
+    "id": "int",
+    "name": "str",
+    "age": "int",
+    "is_male": "bool"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "data": [],
+  "columns": {
+    "id": "int",
+    "name": "str",
+    "lections": "int",
+    "is_in_univers": "bool"
+  }
+}
