@@ -71,5 +71,7 @@ COMP_FUNCS = {
     '!=': lambda x,y: True if x != y else False,
     '~':  lambda x,y: True if x in y else False 
     }
+
+DATADIR   =  'src/data/'
 ALLCOLUMNS = '*'
-METAFILE = "db_meta.json"
+METAFILE = "src/db_meta.json"
