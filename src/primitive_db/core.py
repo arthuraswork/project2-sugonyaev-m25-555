@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from .consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS, ALLCOLUMNS
+from .consts import AlarmResponse, DB_COMMANDS, COMP_FUNCS, ALLCOLUMNS, SuccessfullResponse
 from .utils import save_metadata, save_table_metadata, load_metadata, load_table_data
-from .decorators import handler_confirm
+from .decorators import handler_confirm, hander_log
     
     
 @dataclass
@@ -34,7 +34,7 @@ class DB:
         if table_name not in self.tables.keys():
             return AlarmResponse.CORE_ERROR
         return self.tables[table_name]
-    
+    @hander_log
     def insert(self, table_name, fields: dict):
         """
         Вставка записи в таблицу
@@ -48,8 +48,8 @@ class DB:
                 inserting_data[field] = fields[field]
             else:
                 return AlarmResponse.CORE_ERROR
-        self.update_table(inserting_data,table_name)
-
+        return self.update_table(inserting_data,table_name)
+    @hander_log
     def delete(self, table_name, column_name, operation, value):
         """
         Удаление записей из таблицы по условию
@@ -64,8 +64,8 @@ class DB:
                 if not COMP_FUNCS[operation](row_value, value):
                     results.append(row)
         table_data['data'] = results
-        self.rewrite_table(table_data, table_name)
-        
+        return self.rewrite_table(table_data, table_name)
+    @hander_log   
     def update(self, table_name, updating_column, new_value, column_name, operation, value):
         """
         Обновление данных в записях по условию
@@ -81,7 +81,7 @@ class DB:
                     row[updating_column] = new_value
             results.append(row)
         table_data['data'] = results
-        self.rewrite_table(table_data, table_name)
+        return self.rewrite_table(table_data, table_name)
 
     def select_on_condition(self, table_name, column_name, operation, value):
         """
@@ -126,11 +126,13 @@ class DB:
         new_data['id'] = len(table_data['data'])+1
         table_data['data'].append(new_data)
         save_table_metadata(table_data,table_name)
+        return SuccessfullResponse.SUCCESSFULL
     def rewrite_table(self,new_data,table_name):
         """
         Перезаписывает результат в файл таблицы
         """
         save_table_metadata(new_data,table_name)
+        return SuccessfullResponse.SUCCESSFULL
 
     def save_db_metadata(self):
         """

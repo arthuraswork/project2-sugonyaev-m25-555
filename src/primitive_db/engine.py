@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from .consts import (
     TokensDDL, TokenServiceWords, TokensDML
 )
+from .decorators import hander_timer
 from .core import DB
 
 @dataclass
@@ -14,7 +15,8 @@ class RuntimeDB:
     
     def update_db(self):
         self.db.update_db_metadata()
-    
+
+
     def user_prompt(self):
         try:
             user_input = prompt.string(prompt="primitive@db:~$")
@@ -26,7 +28,7 @@ class RuntimeDB:
         user_input = prompt.string(prompt="primitive@db:~!>")
         self.resulting(self.parser.parse(user_input))
         
-    def draw_list_results(table_name, tables):
+    def draw_list_results(self,tables):
         table = PrettyTable()
         table.field_names = ['table name','columns', 'datatypes']
         for t in list(tables.keys()):
@@ -35,17 +37,20 @@ class RuntimeDB:
                 )
         print(table)
 
-    def draw_select_results(table_name, names, data=None):
+    def draw_select_results(self,data=None):
+        typer = lambda i: 'str' if isinstance(i,str) else 'int' if isinstance(i,int) else 'bool'
         table = PrettyTable()
-        table.field_names = [f'{k}: {v}' for k,v in list(names.items())]
         if data:
+            table.field_names = [f'{k}: {typer(v)}' for k,v in list(data[0].items())]
             for row in data:
                 table.add_row(list(row.values()))
         print(table)
 
-    
+    @hander_timer
     def resulting(self,result: dict):
         response_type = result.get("type")
+        if result.get("message"):
+            print(result["message"], result['type'])
         if response_type:
             match response_type:
                 case TokensDDL.CREATE:
@@ -61,7 +66,6 @@ class RuntimeDB:
                     self.draw_list_results(self.db.list_tables())
                 
                 case TokensDML.UPDATE:
-                    print(result)
                     self.db.update(
                         table_name=result["table_name"],
                         column_name=result['condition']['column_name'],
@@ -79,7 +83,7 @@ class RuntimeDB:
                         )
                     if selecting_result:
                         self.draw_select_results(
-                            data=selecting_result['data'], names=selecting_result['columns']
+                            data=selecting_result['data']
                         )
                         
                 
@@ -97,4 +101,4 @@ class RuntimeDB:
                 case TokensDDL.DROP:
                     self.db.drop_table(table_name=result["table_name"])
                 case _:
-                    ...
+                    print('Неизвестная команда, help - чтобы вызвать список команд')

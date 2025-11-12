@@ -152,20 +152,17 @@ class QueryParser:
             query['table_name'] = table_name 
         except Exception as e:
             query['type'] = AlarmResponse.PARSE_ERROR
-            query['message'] = e
+            query['message'] = 'Ошибка в запросе'
         return query
     
     @staticmethod
     def updating_parser(query: dict) -> dict:
         tokenized = query['text'].split()
-        table_name = ''
         condition = []
-        new_value = None
-        updating_column = ''
         flag_equal = False
         flag = False
         for token in tokenized:
-            if token == ')':
+            if token == TokenSymbols.END_PARENTH.value:
                 flag = False
             if flag and len(condition) == 2:
                 if token.isdigit():
@@ -177,7 +174,7 @@ class QueryParser:
 
             if flag:
                 condition.append(token)
-            if token == '(':
+            if token == TokenSymbols.BEGIN_PARENTH.value:
                 flag = True
 
         for i, token in enumerate(tokenized):
@@ -185,7 +182,7 @@ class QueryParser:
                 table_name = tokenized[i+1]
                 break
         for token in tokenized:
-            if token == TokenSymbols.ENG_BRACES:
+            if token == TokenSymbols.END_BRACES.value:
                 flag = False
             if flag and token != '=' and not flag_equal:
                 updating_column = token
@@ -197,11 +194,13 @@ class QueryParser:
                     new_value = True if token == 'true' else False
                 else:
                     new_value = token[1:-1]
+                flag = False
+                flag_equal = False
 
             if token == '=':
                 flag_equal = True
 
-            if token == TokenSymbols.BEGIN_BRACES:
+            if token == TokenSymbols.BEGIN_BRACES.value:
                 flag = True
         try:
             query['updating_column'] = updating_column
@@ -210,7 +209,7 @@ class QueryParser:
             query['table_name'] = table_name 
         except Exception as e:
             query['type'] = AlarmResponse.PARSE_ERROR
-            query['message'] = e
+            query['message'] = 'Ошибка в запросе'
         return query
     
     @staticmethod
@@ -229,7 +228,7 @@ class QueryParser:
             if i > 0 and tokenized[i-1] == "select":
                 what = token
                 
-            if token == TokenSymbols.ENG_PARENTH.value and condition_flag:
+            if token == TokenSymbols.END_PARENTH.value and condition_flag:
                 condition_flag = False
 
             if condition_flag and token != TokenSymbols.BEGIN_PARENTH.value:
@@ -276,7 +275,7 @@ class QueryParser:
                 break
         
         start = text.find(TokenSymbols.BEGIN_BRACES.value)
-        end = text.find(TokenSymbols.ENG_BRACES.value)
+        end = text.find(TokenSymbols.END_BRACES.value)
         if start != -1 and end != -1:
             fields_text = text[start + 1:end].strip()
         
@@ -326,7 +325,7 @@ class QueryParser:
                 if token == TokenSymbols.BEGIN_BRACES.value:
                     fields_flag = True
 
-                elif token == TokenSymbols.ENG_BRACES.value:
+                elif token == TokenSymbols.END_BRACES.value:
                     fields_flag = False
 
                 if fields_flag:

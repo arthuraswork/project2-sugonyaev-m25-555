@@ -18,9 +18,9 @@ BOOLVALS = ['true', 'false','True','False']
 
 class TokenSymbols(Enum):
     BEGIN_BRACES  = "{"
-    ENG_BRACES    = "}"
+    END_BRACES    = "}"
     BEGIN_PARENTH = "("
-    ENG_PARENTH   = ")"
+    END_PARENTH   = ")"
     COMMA         = ","
     COLON         = ":"
 
