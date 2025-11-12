@@ -24,7 +24,7 @@ PrimitiveDB - это легковесная СУБД, поддерживающа
 
 ### Поддерживаемые команды DDL (Data Definition Language):
 
-- `create table <имя> {<поле1> <тип>, <поле2> <тип>, ...}` - создание таблицы
+- `create table <имя> {<тип> <поле1>, <тип> <поле2>, ...}` - создание таблицы
 - `drop table <имя>` - удаление таблицы (с подтверждением)
 - `info <имя_таблицы>` - информация о структуре таблицы
 - `list` - список всех таблиц
@@ -58,6 +58,63 @@ PrimitiveDB - это легковесная СУБД, поддерживающа
 - `>=` (больше или равно)
 - `~` (содержит в строке)
 
+
+## Структура хранения данных
+
+- **Метаданные**: `db_meta.json` - информация о таблицах и их структурах
+- **Данные таблиц**: `src/data/<имя_таблицы>.json` - данные каждой таблицы
+- **Автоматическое поле**: Каждая таблица получает поле `id` типа `int` как первичный ключ
+
 ## Начало работы
 
-### Установка зависимостей
+Перед началом работы убедитесь, что у вас установлены poetry и git
+
+### Установка Запуск
+```bash
+    git clone https://github.com/arthuraswork/project2-sugonyaev-m25-555
+    cd project2-sugonyaev-m25-555
+    #-- вариант A
+    poetry lock
+    poetry install
+    poetry run database
+    #-- вариант Б
+    make run
+    
+    #--В дальнейшем 
+    poetry run database
+```
+
+## Сокращенные версии команд
+
+```sql
+
+    select * from <таблица> (<условие>)
+    insert into <таблица> {<тип: поле>}
+    update <таблица> {<поле = новое значение>} (<условие>)
+
+```
+
+## Примеры работы
+
+```sql
+-- Создание таблицы
+create table products {str name, int price, str category}
+
+-- Вставка данных
+insert into products values {name: 'Laptop', price: 1000, category: 'Electronics'}
+
+-- Выборка с условием
+select * from products where (price > 500)
+
+-- Обновление данных
+update products set {price: 900} where (name = 'Laptop')
+
+-- Удаление данных
+delete from products where (category = 'Electronics')
+
+-- Удаление таблицы
+drop table products
+```
+## Демонстрация
+
+[![asciicast](https://asciinema.org/a/shYsj4p8s7R9857QdULmxGso7.svg)](https://asciinema.org/a/shYsj4p8s7R9857QdULmxGso7)

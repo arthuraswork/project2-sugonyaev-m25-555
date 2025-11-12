@@ -15,3 +15,9 @@ package-install:
 
 lint:
 	poetry run ruff check .
+
+run:
+	poetry lock
+	poetry install
+	poetry build
+	poetry run database
